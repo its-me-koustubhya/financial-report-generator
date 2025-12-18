@@ -14,7 +14,6 @@ class ReportState(TypedDict):
   insights: Annotated[List[str], operator.add] # Key findings
   trends: Annotated[List[str], operator.add] # Identified trends
 
-  report_sections: Optional[Dict[str, str]] # Different sections (intro, analysis, conclusion)
   final_report: str # polished report
 
   current_step: str # Track which agent is working

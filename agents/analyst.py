@@ -114,22 +114,5 @@ def analyst_agent(state: ReportState) -> Dict:
         "messages": messages_list
     }
 
-if __name__ == "__main__":
-    test_state = {
-        "user_input": "Tesla",
-        "raw_data": [
-            "Tesla reported revenue of $96.8 billion in 2023, up 19% from previous year.",
-            "Tesla's net income was $15 billion in 2023. The company delivered 1.8 million vehicles.",
-            "Stock price has grown 120% year over year. Market cap exceeds $800 billion."
-        ],
-        "insights": [],
-        "trends": [],
-        "messages": []
-    }
-    
-    result = analyst_agent(test_state)
-    print("Key Metrics:", result['key_metrics'])
-    print("\nInsights:", result['insights'])
-    print("\nTrends:", result['trends'])
-    print("\nMessages:", result['messages'])
+
     

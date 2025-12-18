@@ -45,7 +45,7 @@ def create_report_workflow():
     
     workflow.add_edge("retry_data_collection", "data_collector")
     
-    # NEW: Early exit goes straight to END
+    # Early exit goes straight to END
     workflow.add_edge("insufficient_data_handler", END)
     
     # Rest of workflow continues as before
@@ -65,44 +65,3 @@ def create_report_workflow():
     app = workflow.compile()
     return app
 
-if __name__ == "__main__":
-    app = create_report_workflow()
-    
-    initial_state = {
-        "user_input": "FakeCompanyDoesNotExist999",
-        "analysis_focus": None,
-        "raw_data": [],
-        "data_sources": [],
-        "key_metrics": None,
-        "insights": [],
-        "trends": [],
-        "report_sections": None,
-        "final_report": "",
-        "current_step": "",
-        "messages": [],
-        "data_collection_attempts": 0,
-        "writing_attempts": 0 
-    }
-    
-    print("🚀 Starting intelligent report generation workflow...")
-    print("="*60)
-    
-    result = app.invoke(initial_state)
-    
-    print("\n" + "="*60)
-    print("✅ Workflow completed!")
-    print("="*60)
-    
-    print(f"\n📊 Final Statistics:")
-    print(f"  - Data collection attempts: {result.get('data_collection_attempts', 0)}")
-    print(f"  - Writing attempts: {result.get('writing_attempts', 0)}")
-    print(f"  - Total sources: {len(result.get('data_sources', []))}")
-    print(f"  - Report length: {len(result.get('final_report', ''))} chars")
-    
-    print(f"\n📝 Messages:")
-    for msg in result['messages']:
-        print(f"  - {msg}")
-    
-    print(f"\n📄 Final Report Preview:")
-    print("="*60)
-    print(result['final_report'][:500] + "...")

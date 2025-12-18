@@ -108,14 +108,3 @@ def data_collector_agent(state: ReportState) -> Dict:
     "messages": messages_list
     }
 
-if __name__ == "__main__":
-   test_state = {
-      "user_input": "tesla",
-      "raw_data":[],
-      "data_sources":[],
-      "messages":[]
-   }
-
-   result = data_collector_agent(test_state)
-   print(f"found {len(result['raw_data'])} chunks of data")
-   print(f"Sources: {len(result['data_sources'])}")

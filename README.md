@@ -1,4 +1,4 @@
-# 🤖 AI Business Report Generator
+# 🤖 AI Financial Report Generator
 
 <div align="center">
 
@@ -7,7 +7,7 @@
 ![Groq](https://img.shields.io/badge/API-Groq,%20Tavily-yellow.svg)
 ![Model](https://img.shields.io/badge/Model-LLama-brightgreen.svg)
 
-**An intelligent multi-agent system that generates comprehensive financial analysis reports using LangGraph and Large Language Models.**
+**An intelligent AI-agentic system that generates comprehensive financial analysis reports using LangGraph and Large Language Models.**
 
 [Features](#-features) • [Demo](#-demo) • [Installation](#-installation) • [Usage](#-usage) • [Architecture](#-architecture) • [Documentation](#-documentation)
 
@@ -40,7 +40,7 @@ The **AI Business Report Generator** is a sophisticated multi-agent system that 
 
 ### Why This Project?
 
-- 🤖 **Learn Multi-Agent Systems**: Understand how specialized AI agents collaborate
+- 🤖 **Learn Agentic Systems**: Understand how to create AI agents
 - 🔄 **Master LangGraph**: Implement complex workflows with conditional logic
 - 📊 **Real-World Application**: Generate actual financial reports for companies
 - 🎓 **Production-Ready Code**: Enterprise-grade error handling and validation
@@ -64,6 +64,7 @@ The **AI Business Report Generator** is a sophisticated multi-agent system that 
 - **🎯 Conditional Routing**: Dynamic decision-making based on data quality
 - **📁 Automatic Saving**: Reports saved with timestamps and proper naming
 - **🖥️ CLI Interface**: User-friendly command-line tool with multiple options
+- **🌐 Web Interface**: UI interface for easier testing and usage
 
 ---
 
@@ -135,7 +136,7 @@ Tesla, Inc. is a leading electric vehicle manufacturer...
 
 ## 🏗️ Architecture
 
-### Multi-Agent System Design
+### System Design
 
 ```mermaid
 graph TD
@@ -154,7 +155,7 @@ graph TD
     K --> L[Disclaimer Report]
 ```
 
-### Agent Roles
+### Different Nodes handle different task
 
 | Agent               | Temperature | Purpose                                                 |
 | ------------------- | ----------- | ------------------------------------------------------- |
@@ -296,6 +297,32 @@ companies = [
 
 ---
 
+## 🌐 Web Interface
+
+### Running Locally
+
+```bash
+streamlit run app.py
+```
+
+Then open http://localhost:8501 in your browser.
+
+### Features
+
+- 📝 Interactive form for company input
+- 📊 Real-time progress tracking
+- 📄 Report preview and download
+- 📈 Statistics dashboard
+- 📚 Report history (advanced version)
+- 🔍 Search and compare reports
+
+### Screenshots
+
+![Main Interface](assets/image1.png)
+![Report View](assets/image2.png)
+
+---
+
 ## ⚙️ Configuration
 
 ### Model Settings
@@ -342,6 +369,7 @@ MIN_QUANTITATIVE_METRICS = 5
 business_report_generator/
 │
 ├── 📄 main.py                    # CLI entry point
+├── 📄 app.py                     # web interface setup
 ├── 📄 batch_generate.py          # Batch processing script
 ├── 📄 config.py                  # Configuration and API setup
 ├── 📄 requirements.txt           # Python dependencies
@@ -623,6 +651,6 @@ If you find this project useful, please consider giving it a star! ⭐
 
 **Built with ❤️ using LangGraph and AI**
 
-[Report Bug](https://github.com/yourusername/business-report-generator/issues) • [Request Feature](https://github.com/yourusername/business-report-generator/issues)
+[Report Bug](https://github.com/its-me-koustubhya/business-report-generator/issues) • [Request Feature](https://github.com/its-me-koustubhya/business-report-generator/issues)
 
 </div>

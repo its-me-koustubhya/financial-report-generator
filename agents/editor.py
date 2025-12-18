@@ -14,11 +14,11 @@ def editor_agent(state: ReportState) -> Dict:
         Dict with formatted_report, current_step, and messages
     """
     
-    # 1. Get draft report from state
+    # Get draft report from state
     original_query = state['user_input']
     draft_report = state['final_report']
     
-    # 2. Extract clean company name
+    # Extract clean company name
     search_terms = ["financial", "report", "earnings", "revenue", "profit", "quarterly", "results"]
     words = original_query.split()
     
@@ -31,7 +31,7 @@ def editor_agent(state: ReportState) -> Dict:
     
     company_name = " ".join(clean_company_parts) if clean_company_parts else words[0]
     
-    # 3. Create editing prompt
+    # Create editing prompt
     prompt = f"""You are a professional editor reviewing a financial analysis report.
 
 Your task: Polish and format this report for final publication.
@@ -51,13 +51,9 @@ Instructions:
 
 Return the polished, final version of the report."""
     
-    # 4. Invoke LLM for editing
-    response = llm_precise.invoke(prompt)
     
-    # 5. Extract final formatted report
-    edited_report = response.content.strip()  # Remove any leading/trailing whitespace
-
-    # 6. Create metadata 
+    response = llm_precise.invoke(prompt)
+    edited_report = response.content.strip()   
     metadata = f"""
 
 ---
@@ -75,7 +71,6 @@ Return the polished, final version of the report."""
     
     formatted_report = metadata + edited_report
 
-    # 7. Return formatted report
     return {
         "final_report": formatted_report,
         "messages": ["Edited report is ready!"]

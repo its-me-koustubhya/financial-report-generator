@@ -32,7 +32,7 @@ def writer_agent(state: ReportState) -> Dict:
             "messages": ["Error: Missing analysis data for report generation"]
         }
     
-    # 2. Create comprehensive writing prompt
+    # Create comprehensive writing prompt
     prompt = f"""You are a senior financial analyst writing an executive report about {company}.
 
     Based on this analysis data:
@@ -121,27 +121,3 @@ def writer_agent(state: ReportState) -> Dict:
     "messages": ["Report written successfully"]
     }
 
-if __name__ == "__main__":
-    test_state = {
-        "user_input": "Tesla",
-        "key_metrics": {
-            "revenue": "$96.8 billion (2023)",
-            "profit": "$15 billion net income",
-            "growth_rate": "19% YoY revenue growth"
-        },
-        "insights": [
-            "Strong revenue growth driven by vehicle deliveries",
-            "Improving profit margins due to operational efficiency"
-        ],
-        "trends": [
-            "Expanding production capacity globally",
-            "Stock price appreciation of 120% YoY"
-        ]
-    }
-    
-    result = writer_agent(test_state)
-    print("Report Generated:")
-    print("="*50)
-    print(result['final_report'])
-    print("="*50)
-    print(f"Status: {result['messages']}")
