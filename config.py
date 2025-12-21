@@ -1,70 +1,95 @@
-import os
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
 
-load_dotenv()
+class Settings(BaseSettings):
+    """Application settings with validation"""
+    
+    # API Keys - Required
+    GROQ_API_KEY: str
+    TAVILY_API_KEY: str
+    
+    # Database - Required in production
+    DATABASE_URL: str
+    
+    # JWT Authentication
+    SECRET_KEY: str 
+    ALGORITHM: str = "HS256"
+    access_token_expire_minutes: int = 1440  # 24 hours
+    
+    # Model Configuration
+    MODEL_NAME: str = "llama-3.3-70b-versatile"
+    
+    # Temperature Settings
+    min_temperature: float = 0.0
+    max_temperature: float = 2.0
+    default_temperature: float = 0.7
+    
+    # Search Configuration
+    max_search_results: int = 5
+    search_depth: str = "advanced"
+    
+    # Report Configuration
+    output_format: str = "markdown"
+    max_report_length: int = 5000
+    min_sources: int = 3
+    
+    # Model configuration for different agents
+    collector_temperature: float = 0.1
+    analyst_temperature: float = 0.3
+    writer_temperature: float = 0.5
+    editor_temperature: float = 0.2
+    
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore"
+    )
 
-# API Keys
-TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-MODEL_NAME = os.getenv("MODEL_NAME", "llama-3.3-70b-versatile")
+# Create global settings instance
+settings = Settings()
 
-# Temperature Settings
-MIN_TEMPERATURE = 0.0
-MAX_TEMPERATURE = 2.0
-DEFAULT_TEMPERATURE = 0.7
-
-# Search configuration
-MAX_SEARCH_RESULTS = 5
-SEARCH_DEPTH = "advanced"
-
-# Report Configuration
-OUTPUT_FORMAT = "markdown"
-MAX_REPORT_LENGTH = 5000
-MIN_SOURCES = 3
-
-# Don't instantiate LLMs at import time - create factory functions instead
+# Factory functions for LLMs (lazy loading)
 def get_llm_factual():
     """Get LLM for factual data collection (low temperature)"""
     from langchain_groq import ChatGroq
     return ChatGroq(
-        api_key=GROQ_API_KEY,
-        model=MODEL_NAME,
-        temperature=0.1
+        api_key=settings.groq_api_key,
+        model=settings.model_name,
+        temperature=settings.collector_temperature
     )
 
 def get_llm_balanced():
     """Get LLM for balanced analysis"""
     from langchain_groq import ChatGroq
     return ChatGroq(
-        api_key=GROQ_API_KEY,
-        model=MODEL_NAME,
-        temperature=0.3
+        api_key=settings.groq_api_key,
+        model=settings.model_name,
+        temperature=settings.analyst_temperature
     )
 
 def get_llm_creative():
     """Get LLM for creative writing"""
     from langchain_groq import ChatGroq
     return ChatGroq(
-        api_key=GROQ_API_KEY,
-        model=MODEL_NAME,
-        temperature=0.5
+        api_key=settings.groq_api_key,
+        model=settings.model_name,
+        temperature=settings.writer_temperature
     )
 
 def get_llm_precise():
     """Get LLM for precise editing"""
     from langchain_groq import ChatGroq
     return ChatGroq(
-        api_key=GROQ_API_KEY,
-        model=MODEL_NAME,
-        temperature=0.2
+        api_key=settings.groq_api_key,
+        model=settings.model_name,
+        temperature=settings.editor_temperature
     )
 
 def get_tavily_client():
     """Get Tavily client (only when needed)"""
     from tavily import TavilyClient
-    if not TAVILY_API_KEY:
-        raise ValueError("TAVILY_API_KEY not found in environment variables")
-    return TavilyClient(api_key=TAVILY_API_KEY)
+    return TavilyClient(api_key=settings.tavily_api_key)
 
 def search_web(query: str) -> list:
     """
@@ -80,8 +105,8 @@ def search_web(query: str) -> list:
         tavily_client = get_tavily_client()
         response = tavily_client.search(
             query, 
-            max_results=MAX_SEARCH_RESULTS, 
-            search_depth=SEARCH_DEPTH
+            max_results=settings.max_search_results, 
+            search_depth=settings.search_depth
         )
 
         if not response.get('results'):

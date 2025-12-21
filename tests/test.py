@@ -95,3 +95,11 @@
 #     print(f"\n📄 Final Report Preview:")
 #     print("="*60)
 #     print(result['final_report'][:500] + "...")
+
+# Create a test file: test_config.py
+from config import settings
+
+print("✅ Configuration loaded successfully!")
+print(f"Model: {settings.MODEL_NAME}")
+print(f"Database URL set: {bool(settings.DATABASE_URL)}")
+print(f"Secret key length: {len(settings.SECRET_KEY)}")

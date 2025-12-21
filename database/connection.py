@@ -1,17 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-import os
-from dotenv import load_dotenv
+from config import settings
 
-load_dotenv()
+# Get database URL from settings
+DATABASE_URL = settings.DATABASE_URL
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL not found in environment variables")
-
-# Fix for Railway PostgreSQL URL (they use postgres:// but SQLAlchemy needs postgresql://)
+# Fix for Railway PostgreSQL URL
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 

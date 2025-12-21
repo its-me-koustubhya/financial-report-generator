@@ -1,14 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import os
-from dotenv import load_dotenv
-
-# Import your existing components
 from graph.workflow import create_report_workflow
-from config import GROQ_API_KEY, TAVILY_API_KEY, MODEL_NAME
-
-load_dotenv()
+from pydantic import BaseModel
+from config import settings
+import os
 
 app = FastAPI(
     title="Financial Report Generator API",
@@ -50,8 +45,9 @@ def health_check():
     """Health check endpoint for monitoring"""
     return {
         "status": "healthy",
-        "groq_key_set": bool(GROQ_API_KEY),
-        "tavily_key_set": bool(TAVILY_API_KEY)
+        "groq_key_set": bool(settings.GROQ_API_KEY),
+        "tavily_key_set": bool(settings.TAVILY_API_KEY),
+        "database_connected": bool(settings.DATABASE_URL)
     }
 
 @app.post("/generate-report", response_model=ReportResponse)
@@ -64,7 +60,7 @@ async def generate_report(request: ReportRequest):
     """
     try:
         # Validate API keys are set
-        if not GROQ_API_KEY or not TAVILY_API_KEY:
+        if not settings.GROQ_API_KEY or not settings.TAVILY_API_KEY:
             raise HTTPException(
                 status_code=500,
                 detail="API keys not configured. Please set GROQ_API_KEY and TAVILY_API_KEY environment variables."

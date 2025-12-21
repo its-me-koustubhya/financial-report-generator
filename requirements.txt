@@ -13,3 +13,4 @@ alembic==1.17.2
 python-jose==3.5.0
 passlib==1.7.4 
 python-multipart==0.0.21
+pydantic-settings==2.12.0
