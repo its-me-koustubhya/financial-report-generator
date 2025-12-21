@@ -7,3 +7,9 @@ streamlit==1.52.2
 fastapi==0.126.0
 uvicorn==0.38.0
 pydantic==2.12.4
+sqlalchemy==2.0.45 
+psycopg2-binary==2.9.11 
+alembic==1.17.2 
+python-jose==3.5.0
+passlib==1.7.4 
+python-multipart==0.0.21
