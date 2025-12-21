@@ -1,6 +1,6 @@
 from typing import Dict
 from graph.state import ReportState
-from config import search_web, llm_factual
+from config import search_web, get_llm_factual
 
 #response we get from tavily
 # {
@@ -44,6 +44,7 @@ def data_collector_agent(state: ReportState) -> Dict:
     Focus on: recent financial results, revenue, profit, market performance.
     Return only the queries, one per line, no numbering or extra text."""
 
+    llm_factual = get_llm_factual()
     query_response = llm_factual.invoke(query_prompt)
 
     messages_list = []

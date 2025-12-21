@@ -1,6 +1,6 @@
 from typing import Dict
 from graph.state import ReportState
-from config import llm_creative
+from config import get_llm_creative
 
 def format_list_items(items, prefix=""):
     """Helper to format list items"""
@@ -110,6 +110,7 @@ def writer_agent(state: ReportState) -> Dict:
     Reference these sources appropriately in your analysis where relevant."""
     
     # 3. Invoke LLM to generate report
+    llm_creative = get_llm_creative()
     report = llm_creative.invoke(prompt)
 
     complete_report_text = report.content

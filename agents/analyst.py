@@ -1,6 +1,6 @@
 from typing import Dict
 from graph.state import ReportState
-from config import llm_balanced
+from config import get_llm_balanced
 import json
 
 def analyst_agent(state: ReportState) -> Dict:
@@ -53,6 +53,7 @@ def analyst_agent(state: ReportState) -> Dict:
     Return ONLY the JSON, no other text."""
 
     # 4. Invoke LLM to get analysis
+    llm_balanced = get_llm_balanced()
     response = llm_balanced.invoke(filter_prompt)
     response_text = response.content
 

@@ -1,14 +1,12 @@
 import os
-from langchain_groq import ChatGroq
-from tavily import TavilyClient
 from dotenv import load_dotenv
 
 load_dotenv()
 
-TAVILY_API_KEY= os.getenv("TAVILY_API_KEY")
-GROQ_API_KEY= os.getenv("GROQ_API_KEY")
-
-MODEL_NAME = os.getenv("MODEL_NAME")
+# API Keys
+TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+MODEL_NAME = os.getenv("MODEL_NAME", "llama-3.3-70b-versatile")
 
 # Temperature Settings
 MIN_TEMPERATURE = 0.0
@@ -21,43 +19,52 @@ SEARCH_DEPTH = "advanced"
 
 # Report Configuration
 OUTPUT_FORMAT = "markdown"
-MAX_REPORT_LENGTH = 5000  # characters
+MAX_REPORT_LENGTH = 5000
 MIN_SOURCES = 3
 
-# for data collector
-llm_factual = ChatGroq(
+# Don't instantiate LLMs at import time - create factory functions instead
+def get_llm_factual():
+    """Get LLM for factual data collection (low temperature)"""
+    from langchain_groq import ChatGroq
+    return ChatGroq(
         api_key=GROQ_API_KEY,
         model=MODEL_NAME,
         temperature=0.1
     )
 
-# for analyst
-llm_balanced = ChatGroq(
+def get_llm_balanced():
+    """Get LLM for balanced analysis"""
+    from langchain_groq import ChatGroq
+    return ChatGroq(
         api_key=GROQ_API_KEY,
         model=MODEL_NAME,
         temperature=0.3
     )
 
-# for writer
-llm_creative = ChatGroq(
+def get_llm_creative():
+    """Get LLM for creative writing"""
+    from langchain_groq import ChatGroq
+    return ChatGroq(
         api_key=GROQ_API_KEY,
         model=MODEL_NAME,
         temperature=0.5
     )
 
-# for editor
-llm_precise = ChatGroq(
+def get_llm_precise():
+    """Get LLM for precise editing"""
+    from langchain_groq import ChatGroq
+    return ChatGroq(
         api_key=GROQ_API_KEY,
         model=MODEL_NAME,
         temperature=0.2
     )
 
-
-# Validate API key exists
-if not TAVILY_API_KEY:
-    raise ValueError("TAVILY API KEY not found in environment variables")
-
-tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
+def get_tavily_client():
+    """Get Tavily client (only when needed)"""
+    from tavily import TavilyClient
+    if not TAVILY_API_KEY:
+        raise ValueError("TAVILY_API_KEY not found in environment variables")
+    return TavilyClient(api_key=TAVILY_API_KEY)
 
 def search_web(query: str) -> list:
     """
@@ -70,7 +77,12 @@ def search_web(query: str) -> list:
         A list of search results with titles, URLs, and content
     """
     try:
-        response = tavily_client.search(query, max_results= MAX_SEARCH_RESULTS, search_depth= SEARCH_DEPTH,)
+        tavily_client = get_tavily_client()
+        response = tavily_client.search(
+            query, 
+            max_results=MAX_SEARCH_RESULTS, 
+            search_depth=SEARCH_DEPTH
+        )
 
         if not response.get('results'):
             return []

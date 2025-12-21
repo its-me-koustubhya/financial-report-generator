@@ -1,6 +1,6 @@
 from typing import Dict
 from graph.state import ReportState
-from config import llm_precise
+from config import get_llm_precise
 from datetime import datetime
 
 def editor_agent(state: ReportState) -> Dict:
@@ -51,7 +51,7 @@ Instructions:
 
 Return the polished, final version of the report."""
     
-    
+    llm_precise = get_llm_precise()
     response = llm_precise.invoke(prompt)
     edited_report = response.content.strip()   
     metadata = f"""
