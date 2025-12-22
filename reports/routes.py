@@ -1,13 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
-from database.connection import get_db
+from database.connection import get_db, SessionLocal
 from database.models import User, Report
 from auth.dependencies import get_current_user
 from pydantic import BaseModel
 from datetime import datetime
 from graph.workflow import create_report_workflow
-from config import get_settings
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
 
@@ -26,14 +25,70 @@ class ReportResponse(BaseModel):
     class Config:
         from_attributes = True
 
-@router.post("/generate", response_model=ReportResponse)
+def process_report_background(
+    report_id: int,
+    company_name: str,
+    focus: str,
+    groq_api_key: str,
+    tavily_api_key: str
+):
+    """
+    Background task that generates the report.
+    Runs in a separate thread, doesn't block the API response.
+    """
+    db = SessionLocal()
+    
+    try:
+        report = db.query(Report).filter(Report.id == report_id).first()
+        
+        if not report:
+            print(f"Error: Report {report_id} not found")
+            return
+        
+        # Generate the report
+        workflow = create_report_workflow(
+            groq_api_key=groq_api_key,
+            tavily_api_key=tavily_api_key
+        )
+        
+        result = workflow.invoke({
+            "company": company_name,
+            "focus": focus or "",
+        })
+        
+        final_report = result.get("final_report", "")
+        
+        if not final_report:
+            raise Exception("Workflow completed but no report was produced")
+        
+        # Update with success
+        report.report_content = final_report
+        report.status = "success"
+        db.commit()
+        
+        print(f"✅ Report {report_id} completed successfully")
+        
+    except Exception as e:
+        print(f"❌ Error generating report {report_id}: {str(e)}")
+        
+        report = db.query(Report).filter(Report.id == report_id).first()
+        if report:
+            report.status = "failed"
+            report.report_content = f"Error: {str(e)}"
+            db.commit()
+    
+    finally:
+        db.close()
+
+@router.post("/generate", response_model=ReportResponse, status_code=202)
 async def generate_report(
     request: ReportRequest,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Generate a financial analysis report for a company.
+    Generate a financial analysis report for a company (async processing).
     
     Requires:
     - Authentication (Bearer token)
@@ -54,48 +109,25 @@ async def generate_report(
         user_id=current_user.id,
         company_name=request.company_name,
         focus=request.focus,
-        report_content="",
+        report_content="Report is being generated. Please check back in a moment.",
         status="pending"
     )
     db.add(new_report)
     db.commit()
     db.refresh(new_report)
     
-    try:
-        # Generate report
-        workflow = create_report_workflow(
-            groq_api_key=current_user.groq_api_key,
-            tavily_api_key=current_user.tavily_api_key
-        )
-
-        result = workflow.invoke({
-            "company": request.company_name,
-            "focus": request.focus or "",
-        })
-        
-        final_report = result.get("final_report", "")
-        
-        if not final_report:
-            raise Exception("Workflow completed but no report was produced")
-        
-        # Update report with content
-        new_report.report_content = final_report
-        new_report.status = "success"
-        db.commit()
-        db.refresh(new_report)
-        
-        return new_report
-        
-    except Exception as e:
-        # Update report with error status
-        new_report.status = "failed"
-        new_report.report_content = f"Error: {str(e)}"
-        db.commit()
-        
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error generating report: {str(e)}"
-        )
+    # Start background processing
+    background_tasks.add_task(
+        process_report_background,
+        new_report.id,
+        request.company_name,
+        request.focus,
+        current_user.groq_api_key,
+        current_user.tavily_api_key
+    )
+    
+    # Return immediately
+    return new_report
 
 @router.get("/", response_model=List[ReportResponse])
 def get_my_reports(
@@ -121,6 +153,32 @@ def get_my_reports(
         .all()
     
     return reports
+
+@router.get("/{report_id}", response_model=ReportResponse)
+def get_report_status(
+    report_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get report status and content.
+    
+    Status values:
+    - 'pending': Still generating
+    - 'success': Completed successfully
+    - 'failed': Generation failed
+    """
+    report = db.query(Report)\
+        .filter(Report.id == report_id, Report.user_id == current_user.id)\
+        .first()
+    
+    if not report:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Report {report_id} not found"
+        )
+    
+    return report
 
 @router.get("/{report_id}", response_model=ReportResponse)
 def get_report(
