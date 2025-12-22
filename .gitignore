@@ -26,4 +26,6 @@ output/
 .DS_Store
 Thumbs.db
 
+# testing files
 test_request.json
+test/

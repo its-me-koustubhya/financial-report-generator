@@ -1,13 +1,23 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings, Settings
+from database.init_db import init_database
 from auth.routes import router as auth_router
 from reports.routes import router as reports_router
+
+# Create tables automatically on startup
+async def lifespan(app: FastAPI):
+    # Startup logic
+    init_database()
+    print("✅ Database tables initialized")
+
+    yield
 
 app = FastAPI(
     title="Financial Report Generator API",
     description="AI-powered financial report generation with user authentication",
-    version="2.0.0"
+    version="2.0.0",
+    lifespan=lifespan
 )
 
 # CORS middleware
