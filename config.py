@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from functools import lru_cache
 from typing import Optional
 
 class Settings(BaseSettings):
@@ -46,52 +47,60 @@ class Settings(BaseSettings):
         extra="ignore"
     )
 
+@lru_cache
+def get_settings() -> Settings:
+    """
+    Create and cache settings instance.
+    This ensures settings are only loaded once and reused.
+    """
+    return Settings()
+
 # Create global settings instance
-settings = Settings()
+settings = get_settings()
 
 # Factory functions for LLMs (lazy loading)
-def get_llm_factual():
+def get_llm_factual(api_key: str = None):
     """Get LLM for factual data collection (low temperature)"""
     from langchain_groq import ChatGroq
     return ChatGroq(
-        api_key=settings.groq_api_key,
-        model=settings.model_name,
+        api_key= api_key or settings.GROQ_API_KEY,
+        model=settings.MODEL_NAME,
         temperature=settings.collector_temperature
     )
 
-def get_llm_balanced():
+def get_llm_balanced(api_key: str = None):
     """Get LLM for balanced analysis"""
     from langchain_groq import ChatGroq
     return ChatGroq(
-        api_key=settings.groq_api_key,
-        model=settings.model_name,
+        api_key= api_key or settings.GROQ_API_KEY,
+        model=settings.MODEL_NAME,
         temperature=settings.analyst_temperature
     )
 
-def get_llm_creative():
+def get_llm_creative(api_key: str = None):
     """Get LLM for creative writing"""
     from langchain_groq import ChatGroq
     return ChatGroq(
-        api_key=settings.groq_api_key,
-        model=settings.model_name,
+        api_key= api_key or settings.GROQ_API_KEY,
+        model=settings.MODEL_NAME,
         temperature=settings.writer_temperature
     )
 
-def get_llm_precise():
+def get_llm_precise(api_key: str = None):
     """Get LLM for precise editing"""
     from langchain_groq import ChatGroq
     return ChatGroq(
-        api_key=settings.groq_api_key,
-        model=settings.model_name,
+        api_key= api_key or settings.GROQ_API_KEY,
+        model=settings.MODEL_NAME,
         temperature=settings.editor_temperature
     )
 
-def get_tavily_client():
+def get_tavily_client(api_key: str = None):
     """Get Tavily client (only when needed)"""
     from tavily import TavilyClient
-    return TavilyClient(api_key=settings.tavily_api_key)
+    return TavilyClient(api_key= api_key or settings.TAVILY_API_KEY)
 
-def search_web(query: str) -> list:
+def search_web(query: str, api_key: str = None) -> list:
     """
     Search the web for information about a given query.
     
@@ -102,7 +111,7 @@ def search_web(query: str) -> list:
         A list of search results with titles, URLs, and content
     """
     try:
-        tavily_client = get_tavily_client()
+        tavily_client = get_tavily_client(api_key)
         response = tavily_client.search(
             query, 
             max_results=settings.max_search_results, 

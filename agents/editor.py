@@ -17,6 +17,10 @@ def editor_agent(state: ReportState) -> Dict:
     # Get draft report from state
     original_query = state['user_input']
     draft_report = state['final_report']
+
+    # Get api key from workflow.config
+    config = state.get("config", {})
+    groq_key = config.get("groq_api_key")
     
     # Extract clean company name
     search_terms = ["financial", "report", "earnings", "revenue", "profit", "quarterly", "results"]
@@ -51,7 +55,7 @@ Instructions:
 
 Return the polished, final version of the report."""
     
-    llm_precise = get_llm_precise()
+    llm_precise = get_llm_precise(api_key=groq_key)
     response = llm_precise.invoke(prompt)
     edited_report = response.content.strip()   
     metadata = f"""

@@ -12,12 +12,21 @@ from agents.quality_checker import (
     handle_insufficient_data  
 )
 
-def create_report_workflow():
+def create_report_workflow(groq_api_key: str = None, tavily_api_key: str = None):
     """
     Creates the LangGraph workflow with quality checks and early exit.
+
+    Create workflow with optional user API keys.
+    If not provided, uses server's default keys.
     """
     
     workflow = StateGraph(ReportState)
+    
+    # Store keys in workflow config to pass to agents
+    workflow.config = {
+        "groq_api_key": groq_api_key,
+        "tavily_api_key": tavily_api_key
+    }
     
     # Add all nodes
     workflow.add_node("data_collector", data_collector_agent)

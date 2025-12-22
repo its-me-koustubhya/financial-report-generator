@@ -14,9 +14,13 @@ def analyst_agent(state: ReportState) -> Dict:
         Dict with key_metrics, insights, trends, current_step, and messages
     """
     
-    # 1. Get raw data from state
+    # Get raw data from state
     query = state['user_input']
     raw_data = state.get('raw_data', [])
+
+    # Get key from workflow.config
+    config = state.get("config", {})
+    groq_key = config.get("groq_api_key")
 
     # error handling for raw data
     if not raw_data:
@@ -53,7 +57,7 @@ def analyst_agent(state: ReportState) -> Dict:
     Return ONLY the JSON, no other text."""
 
     # 4. Invoke LLM to get analysis
-    llm_balanced = get_llm_balanced()
+    llm_balanced = get_llm_balanced(api_key=groq_key)
     response = llm_balanced.invoke(filter_prompt)
     response_text = response.content
 

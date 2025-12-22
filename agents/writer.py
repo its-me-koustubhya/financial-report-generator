@@ -17,12 +17,16 @@ def writer_agent(state: ReportState) -> Dict:
         Dict with report_sections, current_step, and messages
     """
     
-    # 1. Extract all necessary data from state
+    # Extract all necessary data from state
     company = state['user_input']
     metrics = state['key_metrics']
     insights = state['insights']
     trends = state['trends']
     sources = state.get('data_sources', [])
+
+    # Get api key from workflow.config
+    config = state.get("config", {})
+    groq_key = config.get("groq_api_key")
 
     # After extracting from state
     if not metrics or not insights:
@@ -110,7 +114,7 @@ def writer_agent(state: ReportState) -> Dict:
     Reference these sources appropriately in your analysis where relevant."""
     
     # 3. Invoke LLM to generate report
-    llm_creative = get_llm_creative()
+    llm_creative = get_llm_creative(api_key=groq_key)
     report = llm_creative.invoke(prompt)
 
     complete_report_text = report.content

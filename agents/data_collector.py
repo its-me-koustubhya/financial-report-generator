@@ -39,12 +39,18 @@ def data_collector_agent(state: ReportState) -> Dict:
     # company name/query about the company
     query = state['user_input'] 
 
+    # Get keys from workflow config
+    config = state.get("config", {})
+    groq_key = config.get("groq_api_key")
+    tavily_key = config.get("tavily_api_key")
+
+
     # prompt to generate queries
     query_prompt = f"""Generate 3 specific search queries to find financial information about {query}.
     Focus on: recent financial results, revenue, profit, market performance.
     Return only the queries, one per line, no numbering or extra text."""
 
-    llm_factual = get_llm_factual()
+    llm_factual = get_llm_factual(api_key=groq_key)
     query_response = llm_factual.invoke(query_prompt)
 
     messages_list = []
@@ -72,7 +78,7 @@ def data_collector_agent(state: ReportState) -> Dict:
     all_sources = []
 
     for q in queries:
-      results = search_web(q)
+      results = search_web(q, tavily_key)
       for result in results:
         if result.get('content'):  # Safety check
             all_raw_data.append(result['content'])
