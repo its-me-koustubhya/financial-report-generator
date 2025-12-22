@@ -11,8 +11,8 @@ from graph.workflow import create_report_workflow
 router = APIRouter(prefix="/reports", tags=["Reports"])
 
 class ReportRequest(BaseModel):
-    company_name: str
-    focus: str | None = None
+    user_input: str
+    analysis_focus: str | None = None
 
 class ReportResponse(BaseModel):
     id: int
@@ -52,8 +52,8 @@ def process_report_background(
         )
         
         result = workflow.invoke({
-            "company": company_name,
-            "focus": focus or "",
+            "user_input": company_name,
+            "analysis_focus": focus or "",
         })
         
         final_report = result.get("final_report", "")
@@ -107,8 +107,8 @@ async def generate_report(
     # Create a pending report entry
     new_report = Report(
         user_id=current_user.id,
-        company_name=request.company_name,
-        focus=request.focus,
+        company_name=request.user_input,
+        focus=request.analysis_focus,
         report_content="Report is being generated. Please check back in a moment.",
         status="pending"
     )
@@ -120,8 +120,8 @@ async def generate_report(
     background_tasks.add_task(
         process_report_background,
         new_report.id,
-        request.company_name,
-        request.focus,
+        request.user_input,
+        request.analysis_focus,
         current_user.groq_api_key,
         current_user.tavily_api_key
     )

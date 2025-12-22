@@ -35,7 +35,7 @@ def create_report_workflow(groq_api_key: str = None, tavily_api_key: str = None)
     workflow.add_node("editor", editor_agent)
     workflow.add_node("retry_data_collection", retry_data_collection)
     workflow.add_node("retry_writing", retry_writing)
-    workflow.add_node("insufficient_data_handler", handle_insufficient_data)  # NEW node
+    workflow.add_node("insufficient_data_handler", handle_insufficient_data) 
     
     # Edges
     workflow.add_edge(START, "data_collector")
