@@ -13,18 +13,40 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """
-    Register a new user.
+    Register a new user, with validatino
     
-    - **email**: Valid email address (must be unique)
-    - **username**: Username (must be unique)
-    - **password**: Password (min 8 characters recommended)
+    - email: Valid email address (must be unique)
+    - username: Username (must be unique)
+    - password: Password (min 8 characters recommended)
     """
+
+    # Validate email format
+    if "@" not in user_data.email or "." not in user_data.email:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid email format"
+        )
+    
+    # Validate username length
+    if len(user_data.username) < 3:
+        raise HTTPException(
+            status_code=400,
+            detail="Username must be at least 3 characters"
+        )
+    
+    # Validate password strength
+    if len(user_data.password) < 8:
+        raise HTTPException(
+            status_code=400,
+            detail="Password must be at least 8 characters"
+        )
+    
     # Check if email already exists
     existing_user = db.query(User).filter(User.email == user_data.email).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+            detail="An account with this email already exists"
         )
     
     # Check if username already exists

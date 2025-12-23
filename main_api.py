@@ -4,6 +4,8 @@ from config import get_settings, Settings
 from database.init_db import init_database
 from auth.routes import router as auth_router
 from reports.routes import router as reports_router
+from middleware.rate_limit import rate_limit_middleware
+
 
 # Create tables automatically on startup
 async def lifespan(app: FastAPI):
@@ -28,6 +30,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.middleware("http")(rate_limit_middleware)
 
 # Include routers
 app.include_router(auth_router)

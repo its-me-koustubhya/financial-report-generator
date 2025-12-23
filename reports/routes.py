@@ -129,6 +129,36 @@ async def generate_report(
     # Return immediately
     return new_report
 
+@router.get("/stats", response_model=dict)
+def get_report_stats(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get statistics about user's reports.
+    
+    Returns:
+        - total_reports: Total number of reports generated
+        - successful: Number of successful reports
+        - failed: Number of failed reports
+        - pending: Number of reports still processing
+    """
+    from sqlalchemy import func
+    
+    stats = db.query(
+        func.count(Report.id).label('total'),
+        func.sum(func.case((Report.status == 'success', 1), else_=0)).label('successful'),
+        func.sum(func.case((Report.status == 'failed', 1), else_=0)).label('failed'),
+        func.sum(func.case((Report.status == 'pending', 1), else_=0)).label('pending')
+    ).filter(Report.user_id == current_user.id).first()
+    
+    return {
+        "total_reports": stats.total or 0,
+        "successful": stats.successful or 0,
+        "failed": stats.failed or 0,
+        "pending": stats.pending or 0
+    }
+
 @router.get("/", response_model=List[ReportResponse])
 def get_my_reports(
     current_user: User = Depends(get_current_user),
